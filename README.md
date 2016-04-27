@@ -8,4 +8,5 @@ O objetivo é apresentar como trabalho final para a disciplina de "Sistema Distr
 * [Bomberman - Wikipedia](https://pt.wikipedia.org/wiki/Bomberman)
 * [Texplay - Image manipulation on gosu](https://banisterfiend.wordpress.com/2008/08/23/texplay-an-image-manipulation-tool-for-ruby-and-gosu/)
 * [GOSU Showcase](https://www.libgosu.org/cgi-bin/mwf/board_show.pl?bid=2)
+* [GOSU multiplayer example - tank](https://github.com/sausheong/tanks)
 
