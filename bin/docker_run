@@ -29,10 +29,6 @@ elif [ "$1" == "force-build" ] ; then
 elif [ "$1" == "clean" ] ; then
   docker rm $(docker ps -aq)
   docker rmi $IMAGE
-elif [ "$1" == "ssh" ] ; then
-  SSH_PARAMS=""
-  ssh $SSH_PARAMS bomberman $2
-  [ "$?" == "255" ] && ssh-keygen -f ~/.ssh/known_hosts -R [127.0.0.1]:2223 && ssh $SSH_PARAMS bomberman $2
 else
   # --rm https://docs.docker.com/engine/reference/run/#clean-up-rm
   # -it https://docs.docker.com/engine/reference/run/#foreground
