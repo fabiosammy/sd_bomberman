@@ -10,7 +10,6 @@ RUN apt-get update
 
 RUN apt-get install -y --no-install-recommends \ 
   build-essential \ 
-  openssh-server \
   sudo \
   nodejs 
 
@@ -38,34 +37,19 @@ RUN apt-get install -y \
   libssl1.0.0 \
   libxss1 
 
-#RUN apt-get install -y \
-#  python-software-properties \ 
-#  software-properties-common \  
-#  && add-apt-repository ppa:xorg-edgers/ppa \
-#  && apt-get update \
-#  && apt-get install -y nvidia-352 nvidia-settings
-
 RUN apt-get install -y \
   mesa-utils \
   binutils \
   x-window-system \
   module-init-tools \
-  && wget -O /tmp/nvidia-driver.run http://us.download.nvidia.com/XFree86/Linux-x86_64/352.63/NVIDIA-Linux-x86_64-352.63.run \
-  && sh /tmp/nvidia-driver.run -a -N --ui=none --no-kernel-module \
-  && rm /tmp/nvidia-driver.run
+  xserver-xorg-video-all 
+
+# TO NVIDIA
+#RUN wget -O /tmp/nvidia-driver.run http://us.download.nvidia.com/XFree86/Linux-x86_64/352.63/NVIDIA-Linux-x86_64-352.63.run \
+#  && sh /tmp/nvidia-driver.run -a -N --ui=none --no-kernel-module \
+#  && rm /tmp/nvidia-driver.run
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# SSH config
-RUN mkdir /var/run/sshd \
-  && sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
-  && echo "export VISIBLE=now" >> /etc/profile \
-  && echo "  X11Forwarding yes" >> /etc/ssh/ssh_config \
-  && echo "  X11DisplayOffset 10" >> /etc/ssh/ssh_config \
-  && echo "  X11UseLocalhost no" >> /etc/ssh/ssh_config \
-  && echo "  AddressFamily inet" >> /etc/ssh/ssh_config \
-  && echo 'root:root' | chpasswd
-ENV NOTVISIBLE "in users profile"
 
 # ADD an user
 RUN adduser --disabled-password --gecos '' bomberman \
@@ -77,7 +61,8 @@ RUN adduser --disabled-password --gecos '' bomberman \
 
 # SET ENV Gems
 ENV HOME=/home/bomberman \
-  APP=/usr/src/app
+  APP=/usr/src/app \
+  LIBGL_DEBUG=verbose
 
 # Configure the main working directory. This is the base 
 # directory used in any further RUN, COPY, and ENTRYPOINT 
