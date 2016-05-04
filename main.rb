@@ -1,9 +1,15 @@
+# Encoding: UTF-8
+
+require 'rubygems'
 require 'gosu'
+
+WIDTH, HEIGHT = 600, 600
 
 class GameWindow < Gosu::Window
   def initialize
-    super 640, 480
-    self.caption = "Gosu Tutorial Game"
+    super WIDTH, HEIGHT
+    
+    self.caption = "Gosu Game"
   end
 
   def update
@@ -13,6 +19,5 @@ class GameWindow < Gosu::Window
   end
 end
 
-window = GameWindow.new
-window.show
+GameWindow.new.show if __FILE__ == $0
 
