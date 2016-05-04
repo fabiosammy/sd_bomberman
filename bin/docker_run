@@ -17,6 +17,7 @@ IMAGE="sd_bomberman"
 [ "$(docker images | grep "$IMAGE")" == "" ] && docker build -t $IMAGE .
 
 if [ "$1" == "" ] ; then
+  xhost +
   # --name https://docs.docker.com/engine/reference/run/#name-name
   # -p https://docs.docker.com/engine/reference/run/#expose-incoming-ports
   docker run $PARAMS \
