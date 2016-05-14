@@ -39,8 +39,9 @@ class Bomberman
     @buffs.push buff_add
 
     if buff.timer != 0
-      #thread para: sleep timer
-      buff.removeAttribute()
+      #thread para:
+      # sleep buff.timer
+      # buff.removeAttribute()
     end
     
     @buffs.pop buff
@@ -69,9 +70,9 @@ class Bomberman
   end
 
   #Aumenta ou diminui o range da explosao
-  def bombExplosionRange(action=:increment)
+  def bombExplosionRange()
     # :decrement
-    bomb_manager.range(action)
+    bomb_manager.range(:increment)
   end
 
   #Aumenta ou diminui a velocidade do jogador

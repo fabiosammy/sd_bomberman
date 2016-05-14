@@ -11,9 +11,9 @@ class Buff
 	player
 	buff_type
 
-	def initialize buff_type player
-		@player = player
-		@buff_type = buff_type
+	def initialize buff_type player 
+		player = player
+		buff_type = buff_type
 		timer
 
 		case buff_type
@@ -41,8 +41,5 @@ class Buff
 		if @buff_type = :immortal
 				@player.immortal=false
 	end
-
-
-
 
 end
