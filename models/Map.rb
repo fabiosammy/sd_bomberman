@@ -1,3 +1,4 @@
+<<<<<<< b6d07cb5f3d6ae98c365fe1c7433306cfd039f9c
 # Encoding: UTF-8
 class Map
 	@file
@@ -21,3 +22,6 @@ class Map
 
 	end
 end
+=======
+# Encoding: UTF-8
+>>>>>>> new classes
