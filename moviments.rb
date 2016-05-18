@@ -5,21 +5,22 @@ require 'gosu'
 
 WIDTH, HEIGHT = 800, 600
 
-class GameWindow < Gosu::Window
+class GameWindow < Gosu::Window 
   def initialize
     super WIDTH, HEIGHT
     
     self.caption = "Gosu Game"
     
     @background_image = Gosu::Image.new("assets/images/aula/space.bmp", :tileable => true)
-    @left = Gosu::Image.load_tiles self, "assets/images/aula/left.png", 576, 358, true
-    @down = Gosu::Image.load_tiles self, "assets/images/aula/down.png", 358, 576, true
-    @current_nave = @down[4]
+    @sprite = Gosu::Image.load_tiles self, "assets/images/personagem/completo.png", 250, 509, true
+
+    @bomberman = @sprite[0]
 
     @f = @frame = 0
+    #@interval = @sprite.size/4
 
-    @x = WIDTH/2 - (@current_nave.width * 0.1)/2 
-    @y = HEIGHT/2 - (@current_nave.height* 0.1)/2
+    @x = WIDTH/2 - (@bomberman.width * 0.1)/2 
+    @y = HEIGHT/2 - (@bomberman.height * 0.1)/2
   end
 
   def update
@@ -40,31 +41,31 @@ class GameWindow < Gosu::Window
 
   def walk_left
     @x -= 5
-    @f = @frame % (@left.size/2)
-    @current_nave = @left[@f]
+    @f = 3 + @frame % @sprite.size/4
+    @bomberman = @sprite[@f]
   end
 
   def walk_right
     @x += 5
-    @f = 4 + (@frame % (@left.size/2))
-    @current_nave = @left[@f]
+    @f = 6 + @frame % @sprite.size/4
+    @bomberman = @sprite[@f]
   end
 
   def walk_up
     @y -= 5
-    @f = 4 + (@frame % (@down.size/2))
-    @current_nave = @down[@f]
+    @f = 9 + @frame % @sprite.size/4
+    @bomberman = @sprite[@f]
   end
 
   def walk_down
     @y += 5
-    @f = @frame % (@down.size/2)
-    @current_nave = @down[@f]
+    @f = @frame % @sprite.size/4
+    @bomberman = @sprite[@f]
   end
 
   def draw
     @background_image.draw 0, 0, 0
-    @current_nave.draw(@x, @y, 1, 0.3, 0.3)
+    @bomberman.draw(@x, @y, 1, 0.3, 0.3)
     # @current_nave.draw_rot(@x, @y, 1, 0.1, 30*0.1)
   end
 
