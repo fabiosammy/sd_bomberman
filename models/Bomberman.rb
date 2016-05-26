@@ -26,7 +26,7 @@ class Bomberman
 
 
   def initialize
-    
+    bomb_manager = BombManager.new(self);
   end
 
   #Funçao para atribuir um Buff ao personagem
@@ -56,8 +56,7 @@ class Bomberman
   end
   
   def plantBomb()
-    if (bomb_manager.plantedBombs < bomb_manager.plantedBombLimit)
-      bomb_manager.plantNew(@x,@y)
+      bomb_manager.plantNew(self)
   end
 
   def die()
