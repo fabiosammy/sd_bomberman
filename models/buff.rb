@@ -8,38 +8,85 @@
 # => :increase_amount_bomb
 
 class Buff
-  player
-  buff_type
 
   def initialize buff_type player 
-    player = player
-    buff_type = buff_type
-    timer
+    @player = player
+    @buff_type = buff_type
+    @timer = 0
 
-    case buff_type
-    when :immortal
-      timer = 8
-      @player.immortal=true;
+    self.method(buff_type.to_s).call :configure
+    self.method(buff_type.to_s).call :apply
 
-    when :kick_wall
-      timer = 20
-      @player.allowKickWall(true)
-
-    when :rollerblades
-      timer = 30
-      @player.kick_wall=true
-
-    else
-      timer = 0
-    end
-
-    [timer, self]
+    [@timer, self]
   end
 
   #Removera o respectivo atributo dado ao player
   def removeAttribute()
-    if @buff_type = :immortal
-        @player.immortal=false
+    self.method(buff_type.to_s).call :remove
+
   end
+
+  def immortal action = :apply
+    if action == :configure then
+      @timer = 8
+
+    elsif action == :apply then
+      @player.immortal=true;
+
+    elsif action == :remove then
+      @player.immortal=false;
+
+    end
+
+  end
+
+  def kick_wall action = :apply
+    if action == :configure then
+      @timer = 20
+
+    elsif action == :apply then
+      @player.allowKickWall(true)
+
+    elsif action == :remove then
+      @player.allowKickWall(false)
+
+    end
+  end
+
+  def rollerblades action = :apply
+    if action == :configure then
+      @timer = 30
+
+    elsif action == :apply then
+      @player.velocity(:increment)
+
+    elsif action == :remove then
+      @player.velocity(:decrement)
+
+    end
+  end
+
+  def death action = :apply
+    if action == :configure then
+      @timer = 0
+
+    elsif action == :apply then
+      @player.die();
+
+    end
+  end
+
+  def kick_bomb
+
+  end
+
+  def increase_explosion
+
+  end
+
+  def increase_amount_bomb 
+
+  end
+
 
 end

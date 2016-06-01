@@ -43,16 +43,12 @@ class Bomberman
     #criar thread para verificar condiçao dos buffs
     timer, buff = buff.new(buff_type, self)
 
-    @buffs.push buff_add
-
-    if buff_add.timer != 0
-      #thread para:
-      # sleep buff.timer
-      # buff.removeAttribute()
+    if timer != 0
+      buffThread = Thread.new { 
+        sleep timer
+        buff.removeAttribute
+      }
     end
-    
-    @buffs.pop buff
-
   end
   
   def plantBomb()
@@ -75,7 +71,11 @@ class Bomberman
 
   #Aumenta ou diminui a velocidade do jogador
   def playerVelocity(action=:increment)
-    # :decrement
+    if action == :increment
+      @velocity++ if @velocity <= 3
+    elseif action == :decrement
+      @velocity--;
+    end
   end
 
 
@@ -94,10 +94,7 @@ class Bomberman
   # => MOVIMENTAÇAO
   #
   def move(frame, direction = :up)
-    walk_up(frame) if direction == :up
-    walk_down(frame) if direction == :down
-    walk_left(frame) if direction == :left
-    walk_right(frame) if direction == :right 
+    self.method("walk_"+direction.to_s).call frame
   end
 
   def walk_left(frame)
