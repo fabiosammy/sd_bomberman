@@ -1,30 +1,24 @@
 # Encoding: UTF-8
 class BombManager
-	attr_acessor :range
-
-	@range
-	@planted_bombs_quantity # => Quantidade de bombas plantadas
-	@planted_bomb_limit	# => Quantidade de bombas limite
-	@explosion_range # => Quantidade em blocos do range da explosao
-
 	def initialize player
 		@player = player
-	end
-
-
-	def plantedBombs
-
+		@range
+		@planted_bombs_quantity # => Quantidade de bombas plantadas
+		@planted_bomb_limit	# => Quantidade de bombas limite
+		@explosion_range # => Quantidade em blocos do range da explosao
 	end
 
 	def plantedBombsQuantity
-		@planted_bombs_quantity ++
+		@planted_bombs_quantity
 	end
 
-	def plantedBombsLimit
-		@planted_bomb_limit
+	def plantedBombsLimit action=''
+		@planted_bomb_limit ++ if action == :increment
+		@planted_bomb_limit -- if action == :decrement
+		@planted_bomb_limit unless action
 	end
 
-	def plantBomb player
+	def plantBomb
 		# => Adicionar no array de bombas
 		bomb = Bomb.new(player)
 
@@ -33,7 +27,9 @@ class BombManager
 
 	end
 
-	def moveTo 
-
+	def range action=:increment
+		@explosion_range ++ if action == :increment
+		@explosion_range -- if action == :decrement
+		@explosion_range unless action
 	end
 end
