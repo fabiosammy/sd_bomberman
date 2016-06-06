@@ -17,10 +17,10 @@ class Bomberman
     @stopped = 0
     @image = @sprite[@stopped]
 
-    @bomb_manager
+    @bomb_manager = BombManager.new self
     @buffs = []
 
-    self.velocity = 1
+    @velocity = 1
 
     #Define imortalidade do personagem
     @immortal = false
@@ -54,18 +54,9 @@ class Bomberman
     @buffs.pop buff
 
   end
-
-  def move(frame, direction = :up)
-    walk_up(frame) if direction == :up
-    walk_down(frame) if direction == :down
-    walk_left(frame) if direction == :left
-    walk_right(frame) if direction == :right 
-  end
   
   def plantBomb()
-    if (bomb_manager.plantedBombs < bomb_manager.plantedBombLimit)
-      bomb_manager.plantNew(@x,@y)
-    end
+    bomb_manager.plantNew(self)
   end
 
   def die()
@@ -73,14 +64,13 @@ class Bomberman
   end
 
   #Aumenta ou diminui a quantidade maxima de bombas plantadas simultaneamente
-  def plantedBombLimit(action=:increment)
-    # :decrement
+  def plantedBombsLimit(action=:increment)
+    @bomb_manager.plantedBombsLimit action
   end
 
   #Aumenta ou diminui o range da explosao
-  def bombExplosionRange()
-    # :decrement
-    bomb_manager.range(:increment)
+  def bombExplosionRange(action=:increment)
+    @bomb_manager.range action
   end
 
   #Aumenta ou diminui a velocidade do jogador
@@ -97,6 +87,17 @@ class Bomberman
   def kickWall(wall)
     wall.moveTo(@new_x, @new_y)
     #or wall.moveTo(:direction)
+  end
+
+
+  # 
+  # => MOVIMENTAÇAO
+  #
+  def move(frame, direction = :up)
+    walk_up(frame) if direction == :up
+    walk_down(frame) if direction == :down
+    walk_left(frame) if direction == :left
+    walk_right(frame) if direction == :right 
   end
 
   def walk_left(frame)
