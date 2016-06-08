@@ -44,17 +44,17 @@ class Bomberman
   #
   def give_buff(buff_type = :no_buff)
     #criar thread para verificar condiçao dos buffs
-    buff = Buff.new(buff_type, self)
-    timer = buff.timer 
-    p "valor de timer #{timer}"
-    p "valor de timer #{buff}"
-    if timer != 0 then
+    buff = Buff.new(buff_type)
+    attrib_buff buff
+  end
+
+  def attrib_buff buff
+    buff.attrib_player self
+    buff.apply_buff
+    if buff.timer != 0 then
       Thread.start {
-        p "entrou"
-        sleep timer
-        p "timer"
+        sleep buff.timer
         buff.remove_attribute
-        p "saiu"
       }
     end
   end
