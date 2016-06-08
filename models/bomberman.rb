@@ -1,11 +1,10 @@
 # Encoding: UTF-8
 
 require 'rubygems'
+require_relative 'bomb_manager'
+require_relative 'buff'
 
 class Bomberman
-  attr_accessor :immortal
-  attr_accessor :kick_wall
-  attr_accessor :kick_bomb
   attr_accessor :velocity
 
   def initialize(window)
@@ -36,68 +35,89 @@ class Bomberman
     @x, @y = x, y
   end
 
-  #Funçao para atribuir um Buff ao personagem
+  def plant_bomb
+    @bomb_manager.plant_bomb(self)
+  end
+
   #
+  # => Funçao para atribuir um Buff ao personagem
   #
-  def giveBuff(buff_type = :no_buff)
+  def give_buff(buff_type = :no_buff)
     #criar thread para verificar condiçao dos buffs
-    timer, buff = buff.new(buff_type, self)
-
-    @buffs.push buff_add
-
-    if buff_add.timer != 0
-      #thread para:
-      # sleep buff.timer
-      # buff.removeAttribute()
+    buff = Buff.new(buff_type, self)
+    timer = buff.timer 
+    p "valor de timer #{timer}"
+    p "valor de timer #{buff}"
+    if timer != 0 then
+      Thread.start {
+        p "entrou"
+        sleep timer
+        p "timer"
+        buff.remove_attribute
+        p "saiu"
+      }
     end
-    
-    @buffs.pop buff
-
-  end
-  
-  def plantBomb()
-    bomb_manager.plantNew(self)
   end
 
+  # => Mata ele
   def die()
+    # => Animacao dele morrendo
+    # => bloqueia movimento
+    # => Altera imagem
+  end
 
+  #
+  # => BUFFs
+  #
+
+  #Controle da imortalidade do personagem
+  def set_immortal(action=:false)
+    @player.immortal = action
   end
 
   #Aumenta ou diminui a quantidade maxima de bombas plantadas simultaneamente
-  def plantedBombsLimit(action=:increment)
+  def planted_bombs_limit(action=:increment)
     @bomb_manager.plantedBombsLimit action
   end
 
   #Aumenta ou diminui o range da explosao
-  def bombExplosionRange(action=:increment)
+  def bomb_explosion_range(action=:increment)
     @bomb_manager.range action
   end
 
   #Aumenta ou diminui a velocidade do jogador
-  def playerVelocity(action=:increment)
-    # :decrement
+  def set_velocity action=:increment
+    if action == :increment and @velocity <= 3
+      @velocity += 1
+
+    elsif action == :decrement and @velocity > 1
+      @velocity -= 1
+
+    end
   end
 
+  # => Permite o jogador chutar bombas
+  def allow_kick_bomb
+    @kick_bomb = true
+  end
 
-  def kickBomb(bomb)
+  # => Chuta uma bomba
+  def kick_bomb(bomb)
     bomb_manager.getBomb(bomb).moveTo(@new_x, @new_y)
     #or bomb.moveTo(:direction)
   end
 
-  def kickWall(wall)
+  # => Chuta uma parede
+  def kick_wall(wall)
     wall.moveTo(@new_x, @new_y)
     #or wall.moveTo(:direction)
   end
-
 
   # 
   # => MOVIMENTAÇAO
   #
   def move(frame, direction = :up)
-    walk_up(frame) if direction == :up
-    walk_down(frame) if direction == :down
-    walk_left(frame) if direction == :left
-    walk_right(frame) if direction == :right 
+    self.method("walk_"+direction.to_s).call frame
   end
 
   def walk_left(frame)

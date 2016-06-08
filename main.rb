@@ -16,7 +16,7 @@ class GameWindow < Gosu::Window
 
     @player = Bomberman.new(self)
     @player.warp(320, 240)
-    @player.velocity = 3
+    #@player.velocity = 3
     @frame = 0
   end
 
@@ -27,7 +27,8 @@ class GameWindow < Gosu::Window
     @player.move(@frame, :up) if Gosu::button_down? Gosu::KbUp
     @player.move(@frame, :down) if Gosu::button_down? Gosu::KbDown
     @player.move(@frame, :left) if Gosu::button_down? Gosu::KbLeft
-    @player.move(@frame, :right) if Gosu::button_down? Gosu::KbRight 
+    @player.move(@frame, :right) if Gosu::button_down? Gosu::KbRight
+    @player.give_buff(:rollerblades) if Gosu::button_down? Gosu::KbSpace 
   end
 
   def draw
