@@ -13,7 +13,7 @@ class Buff
   def initialize buff_type
     @buff_type = buff_type
     @timer = 0
-    @image
+    @image = Gosu::Image.new "assets/images/buffs/buff_#{buff_type.to_s}.bmp"
   end
 
   def attrib_player player
