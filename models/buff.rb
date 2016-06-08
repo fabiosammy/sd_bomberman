@@ -8,8 +8,9 @@
 # => :increase_amount_bomb
 
 class Buff
+  attr_reader :timer
 
-  def initialize buff_type player 
+  def initialize buff_type, player 
     @player = player
     @buff_type = buff_type
     @timer = 0
@@ -17,12 +18,11 @@ class Buff
     self.method(buff_type.to_s).call :configure
     self.method(buff_type.to_s).call :apply
 
-    [@timer, self]
   end
 
   #Removera o respectivo atributo dado ao player
-  def removeAttribute()
-    self.method(buff_type.to_s).call :remove
+  def remove_attribute
+    self.method(@buff_type.to_s).call :remove
 
   end
 
@@ -31,10 +31,10 @@ class Buff
       @timer = 8
 
     elsif action == :apply then
-      @player.immortal=true;
+      @player.set_immortal=true
 
     elsif action == :remove then
-      @player.immortal=false;
+      @player.set_immortal=false
 
     end
 
@@ -45,23 +45,23 @@ class Buff
       @timer = 20
 
     elsif action == :apply then
-      @player.allowKickWall(true)
+      @player.allow_kick_wall(true)
 
     elsif action == :remove then
-      @player.allowKickWall(false)
+      @player.allow_kick_wall(false)
 
     end
   end
 
   def rollerblades action = :apply
     if action == :configure then
-      @timer = 30
+      @timer = 5
 
     elsif action == :apply then
-      @player.velocity(:increment)
+      @player.set_velocity(:increment)
 
     elsif action == :remove then
-      @player.velocity(:decrement)
+      @player.set_velocity(:decrement)
 
     end
   end
@@ -71,21 +71,39 @@ class Buff
       @timer = 0
 
     elsif action == :apply then
-      @player.die();
+      @player.die()
 
     end
   end
 
-  def kick_bomb
+  def kick_bomb action = :apply
+    if action == :configure then
+      @timer = 0
 
+    elsif action == :apply then
+      @player.allow_kick_bomb
+
+    end
   end
 
-  def increase_explosion
+  def increase_explosion action = :apply
+    if action == :configure then
+      @timer = 0
 
+    elsif action == :apply then
+      @player.bomb_explosion_range(:increment)
+
+    end
   end
 
-  def increase_amount_bomb 
+  def increase_amount_bomb action = :apply
+    if action == :configure then
+      @timer = 0
 
+    elsif action == :apply then
+      @player.planted_bombs_limit :increment
+
+    end
   end
 
 
