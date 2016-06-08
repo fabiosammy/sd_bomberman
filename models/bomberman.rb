@@ -6,6 +6,7 @@ require_relative 'buff'
 
 class Bomberman
   attr_accessor :velocity
+  attr_accessor :image
 
   def initialize(window)
     # carrega sprite do bomberman e as transforma em uma array de imagens.
@@ -51,12 +52,14 @@ class Bomberman
   def attrib_buff buff
     buff.attrib_player self
     buff.apply_buff
+
     if buff.timer != 0 then
       Thread.start {
         sleep buff.timer
         buff.remove_attribute
       }
     end
+
   end
 
   # => Mata ele
