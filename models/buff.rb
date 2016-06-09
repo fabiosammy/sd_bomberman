@@ -9,6 +9,7 @@
 
 class Buff
   attr_reader :timer
+  attr_reader :image
 
   def initialize buff_type
     @buff_type = buff_type
