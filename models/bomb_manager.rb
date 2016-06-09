@@ -21,7 +21,10 @@ class BombManager
 	def plant_bomb
 		# => Adicionar no array de bombas
 		bomb = Bomb.new(@player)
-
+		Thread.start{
+			sleep 2
+			bomb.explode @range
+		}
 		# => Criar thread para contagem regressiva
 		# => Explodir 
 
