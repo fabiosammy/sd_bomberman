@@ -6,11 +6,18 @@ require_relative 'buff'
 
 class Bomberman
   attr_accessor :velocity
+  attr_reader :x
+  attr_reader :y
+  attr_accessor :window
+  attr_reader :bomb_manager
+  
 
   def initialize(window)
     # carrega sprite do bomberman e as transforma em uma array de imagens.
     @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/sprite.png", 246, 506, true)
     
+    @window = window
+
     @x = @y = 0
     # posicao do bomberman parado no sentido em que está. Inicial é parado de frente.
     @stopped = 0
@@ -28,7 +35,8 @@ class Bomberman
     @kick_wall = false
 
     #Permite ou nao o personagem chutar bombas
-    @kick_bomb = false    
+    @kick_bomb = false 
+
   end
 
   def warp(x, y)
@@ -36,25 +44,19 @@ class Bomberman
   end
 
   def plant_bomb
-    @bomb_manager.plant_bomb(self)
+    @bomb_manager.plant_bomb
   end
 
   #
   # => Funçao para atribuir um Buff ao personagem
   #
   def give_buff(buff_type = :no_buff)
-    #criar thread para verificar condiçao dos buffs
     buff = Buff.new(buff_type, self)
     timer = buff.timer 
-    p "valor de timer #{timer}"
-    p "valor de timer #{buff}"
     if timer != 0 then
       Thread.start {
-        p "entrou"
         sleep timer
-        p "timer"
         buff.remove_attribute
-        p "saiu"
       }
     end
   end

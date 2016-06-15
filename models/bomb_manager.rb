@@ -1,11 +1,14 @@
 # Encoding: UTF-8
+require_relative "bomb"
 class BombManager
+	attr_accessor :planted_bombs
 	def initialize player
 		@player = player
 		@range
 		@planted_bombs_quantity # => Quantidade de bombas plantadas
 		@planted_bomb_limit	# => Quantidade de bombas limite
 		@explosion_range # => Quantidade em blocos do range da explosao
+		@planted_bombs = Array.new
 	end
 
 	def planted_bombs_quantity
@@ -20,8 +23,12 @@ class BombManager
 
 	def plant_bomb
 		# => Adicionar no array de bombas
-		bomb = Bomb.new(@player)
-
+		@planted_bombs << Bomb.new(@player)
+		Thread.start {
+			sleep 5
+			p "explodiu"
+			@planted_bombs.shift
+		}
 		# => Criar thread para contagem regressiva
 		# => Explodir 
 
