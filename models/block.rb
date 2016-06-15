@@ -36,7 +36,7 @@ class Block
       @map_name = map_name
       @angle = 0
       @buff_type = :immortal
-      set_buff_type(Random.rand 2)
+      set_buff_type(Random.rand 6)
 
       update_image(@type)
       
@@ -47,6 +47,14 @@ class Block
             @buff_type = :immortal
         when 1
             @buff_type = :death
+        when 2
+            @buff_type = :bomb
+        when 3
+            @buff_type = :kick_wall
+        when 4
+            @buff_type = :rollerblades
+        when 5
+            @buff_type = :kick_bomb
         else 
             @buff_type = :flame
         end
