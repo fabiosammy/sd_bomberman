@@ -23,13 +23,15 @@ class GameWindow < Gosu::Window
   def update
     @frame += 1 
     @player.stopped
+    
     button_listener
     queue_execute
-
-    @player.give_buff(:rollerblades) if Gosu::button_down? Gosu::KbSpace 
   end
 
   def button_listener
+    if Gosu::button_down? Gosu::KbSpace
+      @player.plant_bomb
+    end 
     if Gosu::button_down? Gosu::KbUp
       @player.move(@frame, :up)
     elsif  Gosu::button_down? Gosu::KbDown
@@ -44,6 +46,14 @@ class GameWindow < Gosu::Window
 
   def draw
     @player.draw
+    bombs = @player.bomb_manager.planted_bombs
+    
+    if bombs != nil
+      for bomb in bombs
+        bomb.draw
+      end
+    end
+
     @map.draw 0, 0, 0
   end
 
