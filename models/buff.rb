@@ -9,21 +9,26 @@
 
 class Buff
   attr_reader :timer
+  attr_reader :image
 
-  def initialize buff_type, player 
-    @player = player
+  def initialize buff_type
     @buff_type = buff_type
     @timer = 0
+    @image = Gosu::Image.new "assets/images/buffs/buff_#{buff_type.to_s}.bmp"
+  end
 
-    self.method(buff_type.to_s).call :configure
-    self.method(buff_type.to_s).call :apply
+  def attrib_player player
+    @player = player
+  end
 
+  def apply_buff
+    self.method(@buff_type.to_s).call :configure
+    self.method(@buff_type.to_s).call :apply
   end
 
   #Removera o respectivo atributo dado ao player
   def remove_attribute
     self.method(@buff_type.to_s).call :remove
-
   end
 
   def immortal action = :apply

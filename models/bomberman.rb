@@ -10,7 +10,6 @@ class Bomberman
   attr_reader :y
   attr_accessor :window
   attr_reader :bomb_manager
-  
 
   def initialize(window)
     # carrega sprite do bomberman e as transforma em uma array de imagens.
@@ -51,14 +50,22 @@ class Bomberman
   # => Funçao para atribuir um Buff ao personagem
   #
   def give_buff(buff_type = :no_buff)
-    buff = Buff.new(buff_type, self)
-    timer = buff.timer 
-    if timer != 0 then
+    #criar thread para verificar condiçao dos buffs
+    buff = Buff.new(buff_type)
+    attrib_buff buff
+  end
+
+  def attrib_buff buff
+    buff.attrib_player self
+    buff.apply_buff
+
+    if buff.timer != 0 then
       Thread.start {
-        sleep timer
+        sleep buff.timer
         buff.remove_attribute
       }
     end
+
   end
 
   # => Mata ele

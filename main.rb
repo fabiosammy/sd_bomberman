@@ -23,12 +23,22 @@ class GameWindow < Gosu::Window
   def update
     @frame += 1 
     @player.stopped
-    
-    @player.move(@frame, :up) if Gosu::button_down? Gosu::KbUp
-    @player.move(@frame, :down) if Gosu::button_down? Gosu::KbDown
-    @player.move(@frame, :left) if Gosu::button_down? Gosu::KbLeft
-    @player.move(@frame, :right) if Gosu::button_down? Gosu::KbRight
+    button_listener
+    queue_execute
     @player.plant_bomb if Gosu::button_down? Gosu::KbSpace 
+  end
+
+  def button_listener
+    if Gosu::button_down? Gosu::KbUp
+      @player.move(@frame, :up)
+    elsif  Gosu::button_down? Gosu::KbDown
+      @player.move(@frame, :down)
+    elsif Gosu::button_down? Gosu::KbLeft
+      @player.move(@frame, :left)
+    elsif Gosu::button_down? Gosu::KbRight
+      @player.move(@frame, :right)
+    end
+
   end
 
   def draw
@@ -42,6 +52,10 @@ class GameWindow < Gosu::Window
     end
 
     @map.draw 0, 0, 0
+  end
+
+  def queue_execute
+
   end
 
   def button_down(id)
