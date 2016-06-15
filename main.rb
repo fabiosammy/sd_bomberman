@@ -23,12 +23,15 @@ class GameWindow < Gosu::Window
   def update
     @frame += 1 
     @player.stopped
+    
     button_listener
     queue_execute
-    @player.plant_bomb if Gosu::button_down? Gosu::KbSpace 
   end
 
   def button_listener
+    if Gosu::button_down? Gosu::KbSpace
+      @player.plant_bomb
+    end 
     if Gosu::button_down? Gosu::KbUp
       @player.move(@frame, :up)
     elsif  Gosu::button_down? Gosu::KbDown

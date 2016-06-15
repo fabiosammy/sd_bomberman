@@ -2,7 +2,6 @@
 class Bomb
 
 	def initialize player
-		p player.window
 		@x,	@y = player.x, player.y
 		@image = Gosu::Image.new player.window, "assets/images/obstaculos/block_destroyable2_gray.png"
 		# => Desenhar bomba na tela em x,y
@@ -18,6 +17,7 @@ class Bomb
 
 
 	def explode range
+		p "explodiu"
 		#Efeito de explodir
 		#atingir elementos no mapa
 		#apagar da memoria
