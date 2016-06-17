@@ -7,12 +7,20 @@ class Bomberman
   attr_accessor :kick_wall
   attr_accessor :kick_bomb
   attr_accessor :velocity
+  attr_reader :uuid, :x, :y
 
-  def initialize(window)
-    # carrega sprite do bomberman e as transforma em uma array de imagens.
-    @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/sprite.png", 246, 506, true)
-    
-    @x = @y = 0
+  # metodo para criar um novo objeto da rede
+  def self.from_sprite(window, sprite)
+    Bomberman.new(window, sprite[1], sprite[2], sprite[3])
+  end
+
+  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0)
+    @window = window
+    @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/completo100.png", 50, 100, true)
+    @uuid = uuid
+    @x = x.to_f
+    @y = y.to_f
+
     # posicao do bomberman parado no sentido em que está. Inicial é parado de frente.
     @stopped = 0
     @image = @sprite[@stopped]
@@ -32,7 +40,7 @@ class Bomberman
     @kick_bomb = false    
   end
 
-  def warp(x, y)
+  def stay(x, y)
     @x, @y = x, y
   end
 
@@ -101,29 +109,29 @@ class Bomberman
 
   def walk_left(frame)
     @x -= velocity
-    @stopped = 3
-    f = 3 + frame % @sprite.size/4
+    @stopped = 4
+    f = 4 + frame % @sprite.size/4
     @image = @sprite[f]
   end
 
   def walk_right(frame)
     @x += velocity
-    @stopped = 6
-    f = 6 + frame % @sprite.size/4
+    @stopped = 2
+    f = frame % @sprite.size/4
     @image = @sprite[f]
   end
 
   def walk_up(frame)
     @y -= velocity
-    @stopped = 9
+    @stopped = 10
     f = 9 + frame % @sprite.size/4
     @image = @sprite[f]
   end
 
   def walk_down(frame)
     @y += velocity
-    @stopped = 0
-    f = frame % @sprite.size/4
+    @stopped = 3
+    f = 7 + frame % @sprite.size/4
     @image = @sprite[f]
   end
   
@@ -132,7 +140,7 @@ class Bomberman
   end
 
   def draw
-    @image.draw(@x, @y, 1, 0.08, 0.06, Gosu::Color.argb(0xff00ff00))
+    @image.draw(@x, @y, 1, 0.34, 0.2)
   end
 end
 
