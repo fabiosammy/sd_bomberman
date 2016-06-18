@@ -43,8 +43,9 @@ class GameWindow < Gosu::Window
 
     # Bomberman
     @player = Bomberman.new(self)
+
     @player.stay(320, 240)
-    @player.velocity = 3
+    # @player.velocity = 3
     
     # Imagem inicial do bomberman a partir da sprite.
     @frame = 0
@@ -73,11 +74,42 @@ class GameWindow < Gosu::Window
     @frame += 1 
     @player.stopped
     
-    @player.move(@frame, :up) if Gosu::button_down? Gosu::KbUp
-    @player.move(@frame, :down) if Gosu::button_down? Gosu::KbDown
-    @player.move(@frame, :left) if Gosu::button_down? Gosu::KbLeft
-    @player.move(@frame, :right) if Gosu::button_down? Gosu::KbRight 
-      
+    button_listener
+    queue_execute
+  end
+
+  def button_listener
+    if Gosu::button_down? Gosu::KbSpace
+      @player.plant_bomb
+    end 
+    if Gosu::button_down? Gosu::KbUp
+      @player.move(@frame, :up)
+    elsif  Gosu::button_down? Gosu::KbDown
+      @player.move(@frame, :down)
+    elsif Gosu::button_down? Gosu::KbLeft
+      @player.move(@frame, :left)
+    elsif Gosu::button_down? Gosu::KbRight
+      @player.move(@frame, :right)
+    end
+
+  end
+
+  def draw
+    @player.draw
+    bombs = @player.bomb_manager.planted_bombs
+    
+    if bombs != nil
+      for bomb in bombs
+        bomb.draw
+      end
+    end
+
+    @map.draw 0, 0, 0
+    @another_bombermans.each_value {|bomberman| bomberman.draw}
+    @player.draw
+  end
+
+  def queue_execute
     add_to_message_queue('player', @player)
 
     # # Envia para o socket as mensagens coletadas do jogador
@@ -101,12 +133,6 @@ class GameWindow < Gosu::Window
         end
       end
     end
-  end
-
-  def draw
-    @map.draw 0, 0, 0
-    @another_bombermans.each_value {|bomberman| bomberman.draw}
-    @player.draw
   end
 
   def button_down(id)
