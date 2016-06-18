@@ -97,13 +97,8 @@ class GameWindow < Gosu::Window
   def draw
     @player.draw
     bombs = @player.bomb_manager.planted_bombs
-    
-    if bombs != nil
-      for bomb in bombs
-        bomb.draw
-      end
-    end
 
+    bombs.each { |bomb| bomb.draw }
     @map.draw 0, 0, 0
     @another_bombermans.each_value {|bomberman| bomberman.draw}
     @player.draw

@@ -16,7 +16,7 @@ PARAMS_LOCK="-v /dev/dri:/dev/dri:rw -v /dev/shm:/dev/shm -v /var/lib/dbus:/var/
 IMAGE="sd_bomberman"
 ARENA="${IMAGE}_arena"
 [ $(docker ps | grep $ARENA | wc -l ) -gt 0 ] && PARAMS_LINK="--link $ARENA:$ARENA"
-#[ "$(docker images | grep "$IMAGE")" == "" ] && ["$1" != "clean"] && docker build -t $IMAGE .
+[ "$(docker images | grep "$IMAGE")" == "" ] && ["$1" != "clean"] && docker build -t $IMAGE .
 xhost +
 
 if [ "$1" == "" ] ; then
