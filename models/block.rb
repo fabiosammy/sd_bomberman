@@ -68,7 +68,7 @@ class Block
     end
 
     def update_image(type)
-      if @type != :buff && @type != :empty
+      if type != :buff
         @image = Gosu::Image.new @h[type], :tileable => true
       end
     end
@@ -77,14 +77,15 @@ class Block
         case @type
         when :wall
             @type = :empty
+            @image = Gosu::Image.new @h[@type], :tileable => true
         when :wall_buff
             @type = :buff
             @buff = Buff.new(@buff_type)
             @image = @buff.image
         when :buff
             @type = :empty
+	    @image = Gosu::Image.new @h[@type], :tileable => true
         end
-        update_image(@type)
         
     end
 
