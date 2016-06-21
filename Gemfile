@@ -12,6 +12,9 @@ gem 'rmagick', '~> 2.15', '>= 2.15.4'
 # OpenGL - An OpenGL wrapper for Ruby.
 gem 'opengl', '~> 0.9.2'
 
+# Celluloid to multiplayer
+gem 'celluloid-io', '~> 0.17.3'
+
 # Another gems
 gem 'releasy', '~> 0.2.2'
 gem 'texplay', '~> 0.4.4.pre'
