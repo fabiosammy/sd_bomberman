@@ -20,12 +20,15 @@ class Map < Gosu::Window
 		@locals = Hash.new
 		@block = Gosu::Image.new("assets/images/cenarios/bricks1.png")
 		@background_image = Gosu::Image.new("assets/images/cenarios/map0.bmp", :tileable => true) #unless background_image
-	
-		
+
 		set_window_size window
 		#metodo para identificar os caracteres do file
 		generateBlocks @file
 		
+
+
+		puts can_move_to 145,700
+
 		super @width-BLOCK_DIM, @height
     	#@client = Client.new(server, port)
     	self.caption = "BomberMANO"
@@ -74,8 +77,13 @@ class Map < Gosu::Window
 
 	end
 
+	#recebe as posicões x e y em pixels
 	def can_move_to posX, posY
+
+		puts posBlockX = (posX/BLOCK_DIM.to_f).ceil-1
+		puts posBlockY = (posY/BLOCK_DIM.to_f).ceil-1
 		
+		@locals[[posBlockX,posBlockY]] != "metal" 	
 	end
 
 	def block_now
