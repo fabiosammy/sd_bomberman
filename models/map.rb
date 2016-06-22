@@ -1,6 +1,7 @@
 # Encoding: UTF-8
 require 'rubygems'
 require 'gosu'
+require_relative 'block'
 
 #WIDTH, HEIGHT = 1750, 900
 BLOCK_DIM = 64
@@ -17,7 +18,7 @@ class Map < Gosu::Window
 		# pegar o arquivo, criar uma array de acordo com o arquivo	
 		@file = File.open("assets/images/cenarios/map1") #unless file
 		window = File.open("assets/images/cenarios/map1")
-		@locals = Hash.new
+		@locals = []
 		@block = Gosu::Image.new("assets/images/cenarios/bricks1.png")
 		@background_image = Gosu::Image.new("assets/images/cenarios/map0.bmp", :tileable => true) #unless background_image
 
@@ -27,7 +28,7 @@ class Map < Gosu::Window
 		
 
 
-		puts can_move_to 145,700
+		can_move_to 145,700
 
 		super @width-BLOCK_DIM, @height
     	#@client = Client.new(server, port)
@@ -50,21 +51,21 @@ class Map < Gosu::Window
 		for j in (0..line.length- 1)
 			#pega apenas a linha 
 			each_line = line[j]
-			
+			@locals << []
 			#verifica cada caracter separadamente e atribui os blocos
 			for i in (0..line[0].size- 1)
 				
 	  			character = each_line.slice(i, 1) 
 	  			case character
 	  			when 'm'
-	  				@locals[[j,i]] = "metal"
-	  				#@locals[[j,i]] = Block.new(:fixed)
+	  				#@locals[[j,i]] = "metal"
+	  				@locals[j][i] = Block.new(j*64,i*64,"map1",:wall_buff,2)
 	  			when '.'
-	  				@locals[[j,i]] = "caminho"
-	  				#@locals[[j,i]] = Block.new(:empty)
+	  				#@locals[[j,i]] = "caminho"
+	  				@locals[j][i] = Block.new(j*64,i*64,"map1",:empty,2)
 	  			when 's'
-	  				@locals[[j,i]] = "ese"
-	  				#@locals[[j,i]] = Block.new(:empty)
+	  				#@locals[[j,i]] = "ese"
+	  				@locals[j][i] = Block.new(j*64,i*64,"map1",:empty,2)
 	  			else
 	  				
 	  			end
@@ -80,10 +81,10 @@ class Map < Gosu::Window
 	#recebe as posicões x e y em pixels
 	def can_move_to posX, posY
 
-		puts posBlockX = (posX/BLOCK_DIM.to_f).ceil-1
-		puts posBlockY = (posY/BLOCK_DIM.to_f).ceil-1
+		posBlockX = (posX/BLOCK_DIM.to_f).ceil-1
+		posBlockY = (posY/BLOCK_DIM.to_f).ceil-1
 		
-		@locals[[posBlockX,posBlockY]] != "metal" 	
+		@locals[posBlockX][posBlockY] != "metal" 	
 	end
 
 	def block_now
@@ -93,21 +94,20 @@ class Map < Gosu::Window
    	def draw
   		
      	#@background_image.draw(0, 0, 0)
-	     line = @locals.length
+	    puts line = @locals.length
+	 
+		# h = 0
+	    # k = 0
+		 for j in (0..@locals.length-1)
+		 	#j = j*BLOCK_DIM
+		 	for i in (0..@locals[0].length-1)
 
-		 h = 0
-	     k = 0
-		 for j in (0..line- 1)
-		 	j = j*BLOCK_DIM
-		 	for i in (0..line)
-		 	 	i = i*BLOCK_DIM
-		 	 	if(@locals[[h,k]] == "metal")
-		    			@block.draw(i,j,0)
-		    		end	
-		    		k += 1
+		    			@locals[j][i].draw
+		     	#end	
+		    #	k += 1
 		  	end
-		  	h += 1
-		  	k = 0
+		 # 	h += 1
+		 # 	k = 0
 		  end
    	end
 end
