@@ -34,7 +34,7 @@ class BombManager
 
 			# => Thread para liberar a açao de plantar mais bombas
 			Thread.start {
-				sleep 1
+				sleep 0.5
 				@can_plant = true
 			}
 
