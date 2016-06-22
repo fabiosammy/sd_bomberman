@@ -90,9 +90,9 @@ RUN chown -R bomberman:bomberman $APP
 
 # Expose port 3000 to the Docker host, so we can access it 
 # from the outside.
-USER bomberman:bomberman
-EXPOSE 22
-EXPOSE 3000
+#EXPOSE 22
+#EXPOSE 3000
+#EXPOSE 5532
 
 # The main command to run when the container starts. Also 
 # tell the Rails dev server to bind to all interfaces by 
