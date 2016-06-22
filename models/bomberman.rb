@@ -82,18 +82,18 @@ class Bomberman
   #
 
   #Controle da imortalidade do personagem
-  def set_immortal(action=:false)
+  def set_immortal(action=false)
     @player.immortal = action
   end
 
   #Aumenta ou diminui a quantidade maxima de bombas plantadas simultaneamente
   def planted_bombs_limit(action=:increment)
-    @bomb_manager.plantedBombsLimit action
+    @bomb_manager.planted_bombs_limit action
   end
 
   #Aumenta ou diminui o range da explosao
   def bomb_explosion_range(action=:increment)
-    @bomb_manager.range action
+    @bomb_manager.explosion_range action
   end
 
   #Aumenta ou diminui a velocidade do jogador
