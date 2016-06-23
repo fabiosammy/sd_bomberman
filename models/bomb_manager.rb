@@ -3,21 +3,19 @@ require_relative "bomb"
 class BombManager
 	DELAY_TO_EXPLODE = 3
 	attr_accessor :planted_bombs
+	attr_reader :planted_bombs_quantity
 
 	def initialize player
 		@player = player
-		@range = 2
+		@explosion_range = 2
 		@planted_bombs_quantity = 0# => Quantidade de bombas plantadas
 		@planted_bombs_limit = 1	# => Quantidade de bombas limite
 		@explosion_range # => Quantidade em blocos do range da explosao
 		@can_plant = true
-		@planted_bombs = Array.new
+		@planted_bombs = Array.new # => Array necessario por causa da renderizacao das bombas
 	end
 
-	def planted_bombs_quantity
-		@planted_bombs_quantity
-	end
-
+	# => 
 	def planted_bombs_limit action=''
 		@planted_bombs_limit += 1 if action == :increment
 		@planted_bombs_limit -= 1 if action == :decrement
@@ -34,9 +32,9 @@ class BombManager
 			@planted_bombs << bomb
 			@planted_bombs_quantity += 1
 
-			# => Thread para liberar plantar mais bombas
+			# => Thread para liberar a açao de plantar mais bombas
 			Thread.start {
-				sleep 1
+				sleep 0.5
 				@can_plant = true
 			}
 
@@ -53,7 +51,7 @@ class BombManager
 
 	end
 
-	def range action=:increment
+	def explosion_range action=:increment
 		@explosion_range += 1 if action == :increment
 		@explosion_range -= 1 if action == :decrement
 		@explosion_range unless action

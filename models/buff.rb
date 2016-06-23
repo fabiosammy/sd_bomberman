@@ -50,10 +50,10 @@ class Buff
       @timer = 20
 
     elsif action == :apply then
-      @player.allow_kick_wall(true)
+      @player.allow_kick_wall true
 
     elsif action == :remove then
-      @player.allow_kick_wall(false)
+      @player.allow_kick_wall false
 
     end
   end
@@ -63,10 +63,10 @@ class Buff
       @timer = 5
 
     elsif action == :apply then
-      @player.set_velocity(:increment)
+      @player.set_velocity :increment
 
     elsif action == :remove then
-      @player.set_velocity(:decrement)
+      @player.set_velocity :decrement
 
     end
   end
@@ -76,7 +76,7 @@ class Buff
       @timer = 0
 
     elsif action == :apply then
-      @player.die()
+      @player.die
 
     end
   end
@@ -96,7 +96,7 @@ class Buff
       @timer = 0
 
     elsif action == :apply then
-      @player.bomb_explosion_range(:increment)
+      @player.bomb_explosion_range :increment
 
     end
   end

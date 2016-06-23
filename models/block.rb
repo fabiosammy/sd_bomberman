@@ -20,10 +20,10 @@ class Block
   @y
   @h
   @map_name
-  @angle
+  @scale
   
     
-    def initialize (x = 0, y = 0, map_name = "", type = :empty)
+    def initialize (x = 0, y = 0, map_name = "", type = :empty, scale = 1)
       
       @h = Hash.new
       @h[:empty] = "assets/images/obstaculos/block_empty.png"
@@ -34,7 +34,7 @@ class Block
       @y = y
       @type = type
       @map_name = map_name
-      @angle = 0
+      @scale = scale
       @buff_type = :immortal
       set_buff_type(Random.rand 6)
 
@@ -68,7 +68,7 @@ class Block
     end
 
     def update_image(type)
-      if @type != :buff && @type != :empty
+      if type != :buff
         @image = Gosu::Image.new @h[type], :tileable => true
       end
     end
@@ -77,19 +77,20 @@ class Block
         case @type
         when :wall
             @type = :empty
+            @image = Gosu::Image.new @h[@type], :tileable => true
         when :wall_buff
             @type = :buff
             @buff = Buff.new(@buff_type)
             @image = @buff.image
         when :buff
             @type = :empty
+	    @image = Gosu::Image.new @h[@type], :tileable => true
         end
-        update_image(@type)
         
     end
 
     def draw
-        @image.draw_rot(@x, @y, 99, @angle)
+        @image.draw(@x, @y, 99, scale_x = @scale, scale_y = @scale)
     end
 
 end
