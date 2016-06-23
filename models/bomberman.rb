@@ -6,19 +6,20 @@ require_relative 'buff'
 
 class Bomberman
   attr_accessor :velocity, :window
-  attr_reader :uuid, :x, :y, :bomb_manager
+  attr_reader :uuid, :x, :y, :direction, :bomb_manager
 
   # metodo para criar um novo objeto da rede
   def self.from_sprite(window, sprite)
-    Bomberman.new(window, sprite[1], sprite[2], sprite[3])
+    Bomberman.new(window, sprite[1], sprite[2], sprite[3], sprite[4])
   end
 
-  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0)
+  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0, direction = :up)
     @window = window
     @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/completo100.png", 50, 100, true)
     @uuid = uuid
     @x = x.to_f
     @y = y.to_f
+    @direction = direction
 
     # posicao do bomberman parado no sentido em que está. Inicial é parado de frente.
     @stopped = 0
@@ -128,34 +129,35 @@ class Bomberman
   # => MOVIMENTAÇAO
   #
   def move(frame, direction = :up)
+    @direction = direction
     self.method("walk_"+direction.to_s).call frame
   end
 
   def walk_left(frame)
     @x -= velocity
     @stopped = 4
-    f = 4 + frame % @sprite.size/4
+    f = 4 + frame 
     @image = @sprite[f]
   end
 
   def walk_right(frame)
     @x += velocity
     @stopped = 2
-    f = frame % @sprite.size/4
+    f = frame
     @image = @sprite[f]
   end
 
   def walk_up(frame)
     @y -= velocity
     @stopped = 10
-    f = 9 + frame % @sprite.size/4
+    f = 9 + frame 
     @image = @sprite[f]
   end
 
   def walk_down(frame)
     @y += velocity
     @stopped = 3
-    f = 7 + frame % @sprite.size/4
+    f = 7 + frame
     @image = @sprite[f]
   end
   
@@ -165,6 +167,10 @@ class Bomberman
 
   def draw
     @image.draw(@x, @y, 1, 0.34, 0.2)
+  end
+
+  def to_socket_send
+    "#{@uuid}|#{@x}|#{@y}|#{@direction}|#{@velocity}"
   end
 end
 
