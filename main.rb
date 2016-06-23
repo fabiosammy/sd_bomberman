@@ -8,8 +8,9 @@ require 'socket'
 require 'securerandom'
 
 require_relative 'models/bomberman'
+require_relative 'models/map'
 
-WIDTH, HEIGHT = 800, 600
+
 
 class Client
   include Celluloid::IO
@@ -33,16 +34,18 @@ end
 
 class GameWindow < Gosu::Window
   def initialize(server, port, uuid)
-    super WIDTH, HEIGHT
+    # Mapa
+    @map = Map.new("map2")
+    super @map.get_width, @map.get_heigth
     
     @client = Client.new(server, port)
     self.caption = "Bomberman Game"
 
-    # Mapa
-    @map = Gosu::Image.new "assets/images/cenarios/map2.bmp", :tileable => true
+    
+    
 
     # Bomberman
-    @player = Bomberman.new(self)
+    @player = Bomberman.new(self,SecureRandom.uuid, 65,65)
 
     @player.stay(320, 240)
     # @player.velocity = 3
@@ -83,13 +86,21 @@ class GameWindow < Gosu::Window
       @player.plant_bomb
     end 
     if Gosu::button_down? Gosu::KbUp
-      @player.move(@frame, :up)
+      if @map.can_move_to @player.x, @player.y-1
+        @player.move(@frame, :up)
+      end
     elsif  Gosu::button_down? Gosu::KbDown
-      @player.move(@frame, :down)
+      if @map.can_move_to @player.x, @player.y+1
+        @player.move(@frame, :down)
+      end
     elsif Gosu::button_down? Gosu::KbLeft
-      @player.move(@frame, :left)
+      if @map.can_move_to @player.x-1, @player.y
+        @player.move(@frame, :left)
+      end
     elsif Gosu::button_down? Gosu::KbRight
+      if @map.can_move_to @player.x+1, @player.y
       @player.move(@frame, :right)
+      end
     end
 
   end
@@ -99,7 +110,7 @@ class GameWindow < Gosu::Window
     bombs = @player.bomb_manager.planted_bombs
 
     bombs.each { |bomb| bomb.draw }
-    @map.draw 0, 0, 0
+    @map.draw
     @another_bombermans.each_value {|bomberman| bomberman.draw}
     @player.draw
   end
