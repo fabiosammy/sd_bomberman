@@ -5,20 +5,22 @@ require_relative 'bomb_manager'
 require_relative 'buff'
 
 class Bomberman
-  attr_accessor :velocity, :window
+  attr_accessor :window, :frame, :direction
   attr_reader :uuid, :x, :y, :bomb_manager
 
   # metodo para criar um novo objeto da rede
-  def self.from_sprite(window, sprite)
-    Bomberman.new(window, sprite[1], sprite[2], sprite[3])
+  def self.from_sprite(window, socket_data)
+    Bomberman.new(window, socket_data[1], socket_data[2], socket_data[3], socket_data[4], socket_data[5])
   end
 
-  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0)
+  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0, direction = :up, frame = 0)
     @window = window
     @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/completo100.png", 50, 100, true)
     @uuid = uuid
     @x = x.to_f
     @y = y.to_f
+    @direction = direction
+    @frame = frame
 
     # posicao do bomberman parado no sentido em que está. Inicial é parado de frente.
     @stopped = 0
@@ -60,7 +62,6 @@ class Bomberman
   def attrib_buff buff
     buff.attrib_player self
     buff.apply_buff
-
     if buff.timer != 0 then
       Thread.start {
         sleep buff.timer
@@ -82,28 +83,27 @@ class Bomberman
   #
 
   #Controle da imortalidade do personagem
-  def set_immortal(action=false)
+  def set_immortal(action = false)
     @player.immortal = action
   end
 
   #Aumenta ou diminui a quantidade maxima de bombas plantadas simultaneamente
-  def planted_bombs_limit(action=:increment)
+  def planted_bombs_limit(action = :increment)
     @bomb_manager.planted_bombs_limit action
   end
 
   #Aumenta ou diminui o range da explosao
-  def bomb_explosion_range(action=:increment)
+  def bomb_explosion_range(action = :increment)
     @bomb_manager.explosion_range action
   end
 
   #Aumenta ou diminui a velocidade do jogador
-  def set_velocity action=:increment
+  def set_velocity action = :increment
     if action == :increment and @velocity <= 3
       @velocity += 1
 
     elsif action == :decrement and @velocity > 1
       @velocity -= 1
-
     end
   end
 
@@ -128,34 +128,37 @@ class Bomberman
   # => MOVIMENTAÇAO
   #
   def move(frame, direction = :up)
-    self.method("walk_"+direction.to_s).call frame
+    @direction = direction
+    # Somente para armazenar na variavel frame, para depois acessar externamente a imagem correta nos outros clientes.
+    @frame = frame
+    self.method("walk_"+@direction.to_s).call frame
   end
 
   def walk_left(frame)
-    @x -= velocity
+    @x -= @velocity
     @stopped = 4
-    f = 4 + frame % @sprite.size/4
+    f = 4 + frame 
     @image = @sprite[f]
   end
 
   def walk_right(frame)
-    @x += velocity
+    @x += @velocity
     @stopped = 2
-    f = frame % @sprite.size/4
+    f = frame
     @image = @sprite[f]
   end
 
   def walk_up(frame)
-    @y -= velocity
+    @y -= @velocity
     @stopped = 10
-    f = 9 + frame % @sprite.size/4
+    f = 9 + frame 
     @image = @sprite[f]
   end
 
   def walk_down(frame)
-    @y += velocity
+    @y += @velocity
     @stopped = 3
-    f = 7 + frame % @sprite.size/4
+    f = 7 + frame
     @image = @sprite[f]
   end
   
@@ -165,6 +168,10 @@ class Bomberman
 
   def draw
     @image.draw(@x, @y, 1, 0.34, 0.2)
+  end
+
+  def to_socket_send
+    "#{@uuid}|#{@x}|#{@y}|#{@direction}|#{@frame}"
   end
 end
 
