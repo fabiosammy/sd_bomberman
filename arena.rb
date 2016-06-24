@@ -30,16 +30,35 @@ class Arena
     loop { async.handle_connection @server.accept }
   end
 
-  def method_player message
-    @responses << "player"
+  def backup_of_player message, user
+    #criar um backup do jogador, para apaga-lo caso se perca a conexão 
+    p "realizando backup of #{@bombermans[user]}" 
+    unless @bombermans[user]
+      @bombermans[user] = message[1..5]
+    end
+  end
+
+  def receive_data_of_player message
+    p "receive_data_of_player!!!"
+    uuid = message[1]
+
+    @sprites[uuid] = message
+    p "Colocado na Array @sprites: #{message}"
+    #@responses << message
   end
 
   def send_responses socket
-    p "RESPONSE: #{@responses}"
-    @responses.each do |response|
-      socket.write response
+    # p "RESPONSE: #{@responses[0][1]}"
+    p "send responses:"
+    response = String.new
+    @sprites.each_value do |sprite|
+      p "Uma resposta: #{sprite}"
+      (response << sprite.join("|") << "\n") if sprite
     end
-    @responses.clear
+    socket.write response
+    p "Writing on socket: #{response}"
+    
+    #@responses.clear
   end
 
   # Trabalha cada conexao (jogador)
@@ -53,40 +72,22 @@ class Arena
     loop do
       data = socket.readpartial(4096)
       data_array = data.split("\n") # "Quebra" as informacoes
+    
       # Caso contenha informacoes no socket do jogador
       if data_array and !data_array.empty?
         begin # Utilizado o "begin" para capturar uma excecao
           # Para cada informacao quebrada, leia a linha "row"(basicamente cada "sprite")
+          
           data_array.each do |row|
             # Agora vamos separar cada atributo dessa "row"(sprite)
             message = row.split("|")
-            self.method("method_"+message[0]).call message
+            
+            if message[0] == 'del' # Quando precisa remover uma imagem
+              @sprites.delete uuid
+            end
+            self.method("receive_data_of_"+message[0]).call message
+            self.method("backup_of_"+message[0]).call message, user
 
-            # # Verifica o tamanho do array final para se certificar que é o padrao de objeto [msg_type, uuid, x, y]
-            # if message.size == 5
-            #   puts "atributte: #{message[4]}"
-            #   uuid = message[1] # A segunda posicao do array sempre devera ser o uuid
-            #   case message[0] # A primeira posicao do array é o tipo de mensagem, ou seja, o que devemos fazer com essa informação 
-            #   when 'player' # Cria o jogador em si para espalhar na rede
-            #     # Cria uma variavel para deletar as sprites desse player, caso haja algum problema de conexão
-            #     unless @bombermans[user]
-            #       @bombermans[user] = message[1..4]
-            #       puts "uuid #{uuid} to #{user} saved"
-
-            #     end
-            #     @sprites[uuid] = message[1..4] # Cria o sprite na rede
-            #   when 'del' # Quando precisa remover uma imagem
-            #     @sprites.delete uuid
-            #   end
-            # end
-
-            # Cria a resposta e envia no socket
-            # response = String.new
-            # # # Faz com que cada sprite esteja em uma nova linha para entregar na rede e fazer o "parse" mais facil
-            # # @sprites.each_value do |sprite|
-            # #   (response << sprite.join("|") << "\n") if sprite
-            # # end
-            # socket.write response # Escreve a resposta no socket
             send_responses socket
           end
         rescue Exception => exception
@@ -98,9 +99,10 @@ class Arena
   rescue EOFError => err
     # um "catch" para caso o jogador perca conexao
     player = @bombermans[user]
-    puts "#{player[0]} has left arena."
-    @sprites.delete player[0]
-    @bombermans.delete user    
+    uuid = player[0]
+    p "#{user} has left arena.."
+    @sprites.delete uuid
+    @bombermans.delete user
     socket.close
   end
 end
