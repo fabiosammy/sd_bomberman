@@ -3,6 +3,7 @@ class Bomb
 
 	def initialize player
 		@x,	@y = player.x, player.y
+
 		@image = Gosu::Image.new player.window, "assets/images/bomba/bombas_1.png"
 		@sprite = Gosu::Image.load_tiles(player.window, "assets/images/bomba/bombas_1.png", @image.width/4, @image.height, true)
 		@image_slice = @sprite[0]

@@ -29,7 +29,7 @@ class Bomberman
     @bomb_manager = BombManager.new self
     @buffs = []
 
-    @velocity = 1
+    @velocity = 2
 
     #Define imortalidade do personagem
     @immortal = false
@@ -167,7 +167,8 @@ class Bomberman
   end
 
   def draw
-    @image.draw(@x, @y, 1, 0.34, 0.2)
+    # @image.draw(@x, @y, 1, 0.34, 0.2)
+    @image.draw(@x, @y, 1, 1, 1)
   end
 
   def to_socket_send
