@@ -10,17 +10,18 @@ class Bomberman
 
   # metodo para criar um novo objeto da rede
   def self.from_sprite(window, socket_data)
-    Bomberman.new(window, socket_data[1], socket_data[2], socket_data[3], socket_data[4], socket_data[5])
+    Bomberman.new(window, socket_data[1], socket_data[2], socket_data[3], socket_data[4], socket_data[5], socket_data[6])
   end
 
-  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0, direction = :up, frame = 0)
+  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0, direction = :up, frame = 0, method = '')
     @window = window
     @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/completo100.png", 50, 100, true)
     @uuid = uuid
+    @method = method
     @x = x.to_f
     @y = y.to_f
     @direction = direction
-    @frame = frame
+    @frame = 0
 
     # posicao do bomberman parado no sentido em que está. Inicial é parado de frente.
     @stopped = 0
@@ -28,6 +29,7 @@ class Bomberman
 
     @bomb_manager = BombManager.new self
     @buffs = []
+    @method = 'die'
 
     @velocity = 2
 
@@ -47,11 +49,53 @@ class Bomberman
   end
 
   def plant_bomb
+    @method = 'plant_bomb'
     @bomb_manager.plant_bomb
   end
 
+  # 
+  # => MOVIMENTAÇAO
   #
-  # => Funçao para atribuir um Buff ao personagem
+  def move(direction = :up)
+    @direction = direction
+    # Somente para armazenar na variavel frame, para depois acessar externamente a imagem correta nos outros clientes.
+    @frame += 1
+    @frame = @frame%3
+    @method = "walk_#{direction.to_s}"
+    self.method("walk_"+@direction.to_s).call
+  end
+
+  def walk_left
+    @x -= @velocity
+    @stopped = 4
+    f = 4 + @frame
+    @image = @sprite[f]
+  end
+
+  def walk_right
+    @x += @velocity
+    @stopped = 2
+    f = @frame
+    @image = @sprite[f]
+  end
+
+  def walk_up
+    @y -= @velocity
+    @stopped = 10
+    f = 9 + @frame
+    @image = @sprite[f]
+  end
+
+  def walk_down
+    @y += @velocity
+    @stopped = 3
+    f = 7 + @frame
+    @image = @sprite[f]
+  end
+
+  #
+  # => Funçao para atribuir um Buff ao personagemuuid = message[1]
+    # method = message[4]
   #
   def give_buff(buff_type = :no_buff)
     #criar thread para verificar condiçao dos buffs
@@ -87,7 +131,8 @@ class Bomberman
     @player.immortal = action
   end
 
-  #Aumenta ou diminui a quantidade maxima de bombas plantadas simultaneamente
+  #Aumenta ou diminui a quantidade maxima de bombauuid = message[1]
+    # method = message[4]s plantadas simultaneamente
   def planted_bombs_limit(action = :increment)
     @bomb_manager.planted_bombs_limit action
   end
@@ -123,56 +168,19 @@ class Bomberman
     wall.moveTo(@new_x, @new_y)
     #or wall.moveTo(:direction)
   end
-
-  # 
-  # => MOVIMENTAÇAO
-  #
-  def move(frame, direction = :up)
-    @direction = direction
-    # Somente para armazenar na variavel frame, para depois acessar externamente a imagem correta nos outros clientes.
-    @frame = frame
-    self.method("walk_"+@direction.to_s).call frame
-  end
-
-  def walk_left(frame)
-    @x -= @velocity
-    @stopped = 4
-    f = 4 + frame 
-    @image = @sprite[f]
-  end
-
-  def walk_right(frame)
-    @x += @velocity
-    @stopped = 2
-    f = frame
-    @image = @sprite[f]
-  end
-
-  def walk_up(frame)
-    @y -= @velocity
-    @stopped = 10
-    f = 9 + frame 
-    @image = @sprite[f]
-  end
-
-  def walk_down(frame)
-    @y += @velocity
-    @stopped = 3
-    f = 7 + frame
-    @image = @sprite[f]
-  end
   
   def stopped
+    #@method = 'stopped'
     @image = @sprite[@stopped]
   end
 
   def draw
-    # @image.draw(@x, @y, 1, 0.34, 0.2)
-    @image.draw(@x, @y, 1, 1, 1)
+    @image.draw(@x, @y, 1, 0.34, 0.2)
+    # @image.draw(@x, @y, 1, 1, 1)
   end
 
   def to_socket_send
-    "#{@uuid}|#{@x}|#{@y}|#{@direction}|#{@frame}"
+    "#{@uuid}|#{@x}|#{@y}|#{@direction}|#{@method}"
   end
 end
 

@@ -43,48 +43,32 @@ class GameWindow < Gosu::Window
 
     # Bomberman
     @player = Bomberman.new(self, uuid)
-    p "Uiid player [#{@player.uuid}]"
-    @player.stay(320, 240)
 
-    @bombs = Array.new
-
-    @method = "stopped"
+    # Define a posição do bomberman no Mapa
+    # Deve-se definir uma posição aleatória do jogador...
+    @player.stay(100, 100)
 
     # @player.velocity = 3
-    
-    # Posição inicial do bomberman a partir da sprite.
-    @frame = 0
 
     # Variáveis para troca de informações
     @others_players = Hash.new # Demais jogadores
-    @others_bombs = Array.new # Demais bombas
     @messages = Array.new # Fila para troca de mensagens
   end
  
   # Game methods
   def update
-    @frame += 1
-    @frame %= 3
-
     @player.stopped
-    stopped_others
     
     button_listener
-
     queue_execute
-
-    render_others_players
   end
 
   def queue_execute
     add_to_message_queue('player', @player.to_socket_send)
 
-    @bombs.each do |bomb|
-      add_to_message_queue('bomb', bomb.to_socket_send)
-    end
-
     send_queue
     read_socket
+
   end
 
   # Game handle connections
@@ -95,84 +79,59 @@ class GameWindow < Gosu::Window
     # [:uuid, :x, :y, :direction].each do |instance|
     #    # Pega cada instancia do objeto e adiciona na mensagem 
     # end
-    @messages.push << "#{msg_type}|#{socket_send_message}|#{@method}"
-     p " Messages Push --> #{msg_type}|#{socket_send_message}|#{@method}"
-     @method = "stopped"
-   
+    @messages.push << "#{msg_type}|#{socket_send_message}"
+    p " Messages Push --> #{msg_type}|#{socket_send_message}"
   end
 
   def send_queue
-    # Envia para o socket as mensagens coletadas do jogador
+    # Envia para o socket as mensagens coletadas
     @messages.each do |message|
       # p "This message from client to socket: #{message}"    
       @client.send_message "#{message}\n"
+      p "send queue: #{message}"
+
     end
     @messages.clear    
-
   end
 
   def read_socket  
     # Faz a leitura de mensagens do servidor
     if msg = @client.read_message
-
       array_data = msg.split("\n")
-      p "Message give to socket: #{array_data.size}"
+      p "read socket: #{array_data}"
 
-      # p "READED from socket #{array_data}"       
+      #p "READED from socket #{array_data}"       
       array_data.each do |row|
-        # p "Cada Objeto +++=== > #{row}"
         attributes = row.split("|")
-        # p "READED: Attributos--- #{attributes}"
         self.method("socket_method_"+attributes[0]).call attributes
-        # execute_methods
       end
     end
   end
 
-  # def execute_methods
-  #   @others_players.each do |player|
-  #     player.self.method("#{player.method}").call
-  #   end
-  # end
 
   def socket_method_player socket_data
     uuid = socket_data[1]
 
     unless @player.uuid == uuid
-      @others_players[uuid] = (Bomberman.new(self, socket_data[1], socket_data[2], socket_data[3], socket_data[4], socket_data[5]))
-      @others_players[uuid].method("#{socket_data[6]}").call
-      p "chmando meodo #{socket_data[6]} de #{@others_players[uuid]}"
-
+      @others_players[uuid] ||= Bomberman.new(self, socket_data[1], socket_data[2], socket_data[3], socket_data[4])
+      method = socket_data[5]
+      p "Main - metodo chamado -->#{method}"
+      @others_players[uuid].method(method.to_s).call
     end
   end
 
   def button_listener
     if Gosu::button_down? Gosu::KbSpace
       @player.plant_bomb
-      @method = 'plant_bomb'
     end
-
     if Gosu::button_down? Gosu::KbUp
-      @player.move(@frame, :up)
+      @player.move(:up)
     elsif Gosu::button_down? Gosu::KbDown
-      @player.move(@frame, :down)
+      @player.move(:down)
     elsif Gosu::button_down? Gosu::KbLeft
-      @player.move(@frame, :left)
+      @player.move(:left)
     elsif Gosu::button_down? Gosu::KbRight
-      @player.move(@frame, :right)
-    end
-  end
-
-  def stopped_others
-    @others_players.each_value do |player|
-      player.stopped
-    end
-  end
-
-  def render_others_players
-    @others_players.each_value do |player|
-      frame = player.frame.gsub(/[^\d\.]/, '').to_i
-      player.move(frame, player.direction)
+      @player.move(:right)
     end
   end
 
@@ -184,7 +143,7 @@ class GameWindow < Gosu::Window
     bombs.each { |bomb| bomb.draw }
     @map.draw 0, 0, 0
 
-    # Dispara a bomba dos jogadores da rede
+    # Dispara os jogadores da rede e as suas bombas
     @others_players.each_value do |bomberman| 
       bomberman.draw
       bomb_player = bomberman.bomb_manager.planted_bombs
