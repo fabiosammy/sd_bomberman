@@ -175,8 +175,8 @@ class Bomberman
   end
 
   def draw
-    @image.draw(@x, @y, 1, 0.34, 0.2)
-    # @image.draw(@x, @y, 1, 1, 1)
+    # @image.draw(@x, @y, 1, 0.34, 0.2)
+    @image.draw(@x, @y, 1, 0.84, 0.62)
   end
 
   def to_socket_send

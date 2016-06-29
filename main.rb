@@ -8,8 +8,8 @@ require 'socket'
 require 'securerandom'
 
 require_relative 'models/bomberman'
+require_relative 'models/map'
 
-WIDTH, HEIGHT = 800, 600
 
 class Client
   include Celluloid::IO
@@ -33,48 +33,42 @@ end
 
 class GameWindow < Gosu::Window
   def initialize(server, port, uuid)
-    super WIDTH, HEIGHT
+    
+    # Mapa
+    @map = Map.new("map1")
+    super @map.get_width, @map.get_heigth
     
     @client = Client.new(server, port)
     self.caption = "Bomberman Game"
 
-    # Mapa
-    @map = Gosu::Image.new "assets/images/cenarios/map2.bmp", :tileable => true
-
     # Bomberman
-    @player = Bomberman.new(self, uuid)
+    @player = Bomberman.new(self, uuid, 65, 65)
 
-    # Define a posição do bomberman no Mapa
-    # Deve-se definir uma posição aleatória do jogador...
-    @player.stay(100, 100)
-
+    @player.stay(320, 240)
     # @player.velocity = 3
 
     # Variáveis para troca de informações
     @others_players = Hash.new # Demais jogadores
     @messages = Array.new # Fila para troca de mensagens
   end
- 
-  # Game methods
+
+   # Game methods
   def update
     @player.stopped
-    
     button_listener
     queue_execute
   end
-
+  
   def queue_execute
     add_to_message_queue('player', @player.to_socket_send)
-
     send_queue
     read_socket
-
   end
 
   # Game handle connections
   # add a message to the queue to send to the server
   def add_to_message_queue(msg_type, socket_send_message)
-    #message = ["#{msg_type}|#{socket_send_message}|\n"] # Cria o array de mensagens
+    #message = [msg_type] # Cria o array de mensagens
     # Verifica todos os objetos em comum e partilha entre os jogadores
     # [:uuid, :x, :y, :direction].each do |instance|
     #    # Pega cada instancia do objeto e adiciona na mensagem 
@@ -125,13 +119,21 @@ class GameWindow < Gosu::Window
       @player.plant_bomb
     end
     if Gosu::button_down? Gosu::KbUp
-      @player.move(:up)
-    elsif Gosu::button_down? Gosu::KbDown
-      @player.move(:down)
+      if @map.can_move_to @player.x, @player.y-1
+        @player.move(:up)
+      end
+    elsif  Gosu::button_down? Gosu::KbDown
+      if @map.can_move_to @player.x, @player.y+1
+        @player.move(:down)
+      end
     elsif Gosu::button_down? Gosu::KbLeft
-      @player.move(:left)
+      if @map.can_move_to @player.x-1, @player.y
+        @player.move(:left)
+      end
     elsif Gosu::button_down? Gosu::KbRight
+      if @map.can_move_to @player.x+1, @player.y
       @player.move(:right)
+      end
     end
   end
 
@@ -141,7 +143,8 @@ class GameWindow < Gosu::Window
     bombs = @player.bomb_manager.planted_bombs
     
     bombs.each { |bomb| bomb.draw }
-    @map.draw 0, 0, 0
+
+    @map.draw
 
     # Dispara os jogadores da rede e as suas bombas
     @others_players.each_value do |bomberman| 
@@ -149,8 +152,8 @@ class GameWindow < Gosu::Window
       bomb_player = bomberman.bomb_manager.planted_bombs
       bomb_player.each { |bomb| bomb.draw }
     end
-
   end
+
 
   def button_down(id)
     if id == Gosu::KbEscape
