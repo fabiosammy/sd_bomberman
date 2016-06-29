@@ -7,10 +7,9 @@ class BombManager
 
 	def initialize player
 		@player = player
-		@explosion_range = 2
-		@planted_bombs_quantity = 0# => Quantidade de bombas plantadas
+		@explosion_range = 2 # => Quantidade em blocos do range da explosao
+		@planted_bombs_quantity = 0 # => Quantidade de bombas plantadas
 		@planted_bombs_limit = 1	# => Quantidade de bombas limite
-		@explosion_range # => Quantidade em blocos do range da explosao
 		@can_plant = true
 		@planted_bombs = Array.new # => Array necessario por causa da renderizacao das bombas
 	end
@@ -41,7 +40,7 @@ class BombManager
 			# => Thread para explodir a bomba
 			Thread.start {
 				sleep DELAY_TO_EXPLODE
-				bomb.explode @range
+				bomb.explode @explosion_range
 				@planted_bombs.shift
 				@planted_bombs_quantity -= 1
 			}

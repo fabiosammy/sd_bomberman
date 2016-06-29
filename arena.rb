@@ -10,7 +10,6 @@ class Arena
     # Inicia o servidor Arena
     puts "Starting Arena at #{host}:#{port}."
     @server = TCPServer.new(host, port)
-    @responses = Array.new
 
     # Variaveis para partilha entre os jogadores
     @bombermans = Hash.new # Utilizado para adicionar cada "bomberman"(jogador)
@@ -18,6 +17,8 @@ class Arena
 
     # Inicia o servico
     async.run
+
+    @uuid = ''
   end
 
   # Metodo para encerrar o servidor corretamente 
@@ -28,37 +29,6 @@ class Arena
   # Metodo para continuar trabalhando as conexoes
   def run
     loop { async.handle_connection @server.accept }
-  end
-
-  def backup_of_player message, user
-    #criar um backup do jogador, para apaga-lo caso se perca a conexão 
-    p "realizando backup of #{@bombermans[user]}" 
-    unless @bombermans[user]
-      @bombermans[user] = message[1..5]
-    end
-  end
-
-  def receive_data_of_player message
-    p "receive_data_of_player!!!"
-    uuid = message[1]
-
-    @sprites[uuid] = message
-    p "Colocado na Array @sprites: #{message}"
-    #@responses << message
-  end
-
-  def send_responses socket
-    # p "RESPONSE: #{@responses[0][1]}"
-    p "send responses:"
-    response = String.new
-    @sprites.each_value do |sprite|
-      p "Uma resposta: #{sprite}"
-      (response << sprite.join("|") << "\n") if sprite
-    end
-    socket.write response
-    p "Writing on socket: #{response}"
-    
-    #@responses.clear
   end
 
   # Trabalha cada conexao (jogador)
@@ -81,12 +51,14 @@ class Arena
           data_array.each do |row|
             # Agora vamos separar cada atributo dessa "row"(sprite)
             message = row.split("|")
-            
+            @uuid = message[1]
             if message[0] == 'del' # Quando precisa remover uma imagem
               @sprites.delete uuid
             end
+
             self.method("receive_data_of_"+message[0]).call message
-            self.method("backup_of_"+message[0]).call message, user
+            p "Message vindo da Arena: #{message}"
+            #self.method("backup_of_"+message[0]).call message, user
 
             send_responses socket
           end
@@ -98,12 +70,40 @@ class Arena
     end # end loop
   rescue EOFError => err
     # um "catch" para caso o jogador perca conexao
-    player = @bombermans[user]
-    uuid = player[0]
-    p "#{user} has left arena.."
-    @sprites.delete uuid
+    # uuid = @bombermans[user][0]
+    p "#{user} has left arena.. e Sprite[#{@uuid}] será deletada!!"
+    @sprites.delete @uuid
+    @sprites << "die"
     @bombermans.delete user
     socket.close
+  end
+
+  def receive_data_of_player message
+    uuid = message[1]
+    # method = message[4]
+
+    @sprites[uuid] = message
+
+    p "Inserindo @sprites[#{uuid}]: #{message}"
+  end
+
+  # #criar um backup do jogador, para apaga-lo caso se perca a conexão 
+  # def backup_of_player message, user
+  #   # p "realizando backup of #{@bombermans[user]}" 
+  #   unless @bombermans[user]
+  #     @bombermans[user] = message[1..5]
+  #   end
+  # end
+
+  def send_responses socket
+    response = String.new
+    @sprites.each do |key, sprite|
+      response << sprite.join("|") << "\n" if sprite
+      p "Uma resposta response: #{response}"
+    end
+    socket.write response
+    p "send responses: --- o/ #{response}"
+
   end
 end
 

@@ -11,7 +11,6 @@ require_relative 'models/bomberman'
 require_relative 'models/map'
 
 
-
 class Client
   include Celluloid::IO
 
@@ -34,112 +33,127 @@ end
 
 class GameWindow < Gosu::Window
   def initialize(server, port, uuid)
+    
     # Mapa
-    @map = Map.new("map2")
+    @map = Map.new("map1")
     super @map.get_width, @map.get_heigth
     
     @client = Client.new(server, port)
     self.caption = "Bomberman Game"
 
-    
-    
-
     # Bomberman
-    @player = Bomberman.new(self,SecureRandom.uuid, 65,65)
+    @player = Bomberman.new(self, uuid, 65, 65)
 
     @player.stay(320, 240)
     # @player.velocity = 3
-    
-    # Imagem inicial do bomberman a partir da sprite.
-    @frame = 0
 
     # Variáveis para troca de informações
-    @another_bombermans = Hash.new # Demais jogadores
+    @others_players = Hash.new # Demais jogadores
     @messages = Array.new # Fila para troca de mensagens
+  end
 
-    add_to_message_queue('player', @player)
+   # Game methods
+  def update
+    @player.stopped
+    button_listener
+    queue_execute
+  end
+  
+  def queue_execute
+    add_to_message_queue('player', @player.to_socket_send)
+    send_queue
+    read_socket
   end
 
   # Game handle connections
   # add a message to the queue to send to the server
-  def add_to_message_queue(msg_type, object)
-    message = [msg_type] # Cria o array de mensagens
+  def add_to_message_queue(msg_type, socket_send_message)
+    #message = [msg_type] # Cria o array de mensagens
     # Verifica todos os objetos em comum e partilha entre os jogadores
-    [:uuid, :x, :y].each do |instance|
-       # Pega cada instancia do objeto e adiciona na mensagem 
-       message.push(object.instance_variable_get("@#{instance}"))
-    end
-    @messages << message.join('|')
+    # [:uuid, :x, :y, :direction].each do |instance|
+    #    # Pega cada instancia do objeto e adiciona na mensagem 
+    # end
+    @messages.push << "#{msg_type}|#{socket_send_message}"
+    p " Messages Push --> #{msg_type}|#{socket_send_message}"
   end
 
-  # Game methods
-  def update
-    @frame += 1 
-    @player.stopped
-    
-    button_listener
-    queue_execute
+  def send_queue
+    # Envia para o socket as mensagens coletadas
+    @messages.each do |message|
+      # p "This message from client to socket: #{message}"    
+      @client.send_message "#{message}\n"
+      p "send queue: #{message}"
+
+    end
+    @messages.clear    
+  end
+
+  def read_socket  
+    # Faz a leitura de mensagens do servidor
+    if msg = @client.read_message
+      array_data = msg.split("\n")
+      p "read socket: #{array_data}"
+
+      #p "READED from socket #{array_data}"       
+      array_data.each do |row|
+        attributes = row.split("|")
+        self.method("socket_method_"+attributes[0]).call attributes
+      end
+    end
+  end
+
+
+  def socket_method_player socket_data
+    uuid = socket_data[1]
+
+    unless @player.uuid == uuid
+      @others_players[uuid] ||= Bomberman.new(self, socket_data[1], socket_data[2], socket_data[3], socket_data[4])
+      method = socket_data[5]
+      p "Main - metodo chamado -->#{method}"
+      @others_players[uuid].method(method.to_s).call
+    end
   end
 
   def button_listener
     if Gosu::button_down? Gosu::KbSpace
       @player.plant_bomb
-    end 
+    end
     if Gosu::button_down? Gosu::KbUp
       if @map.can_move_to @player.x, @player.y-1
-        @player.move(@frame, :up)
+        @player.move(:up)
       end
     elsif  Gosu::button_down? Gosu::KbDown
       if @map.can_move_to @player.x, @player.y+1
-        @player.move(@frame, :down)
+        @player.move(:down)
       end
     elsif Gosu::button_down? Gosu::KbLeft
       if @map.can_move_to @player.x-1, @player.y
-        @player.move(@frame, :left)
+        @player.move(:left)
       end
     elsif Gosu::button_down? Gosu::KbRight
       if @map.can_move_to @player.x+1, @player.y
-      @player.move(@frame, :right)
+      @player.move(:right)
       end
     end
-
   end
 
   def draw
     @player.draw
+
     bombs = @player.bomb_manager.planted_bombs
-
+    
     bombs.each { |bomb| bomb.draw }
+
     @map.draw
-    @another_bombermans.each_value {|bomberman| bomberman.draw}
-    @player.draw
-  end
 
-  def queue_execute
-    add_to_message_queue('player', @player)
-
-    # # Envia para o socket as mensagens coletadas do jogador
-    @client.send_message @messages.join("\n")
-    @messages.clear
-
-    # # Faz a leitura de mensagens do servidor
-    if msg = @client.read_message
-      data = msg.split("\n")
-      # verifica os objetos escritos em "arena.rb"
-      data.each do |row|
-        attributes = row.split("|")
-        if attributes.size == 4
-          uuid = attributes[1]
-          unless @uuid == uuid # Garante que o objeto não seja o proprio jogador
-            # Instancia o novo bomberman da rede localmente
-            if attributes[0] == 'player'
-              @another_bombermans[uuid] = Bomberman.from_sprite(self, attributes)
-            end
-          end
-        end
-      end
+    # Dispara os jogadores da rede e as suas bombas
+    @others_players.each_value do |bomberman| 
+      bomberman.draw
+      bomb_player = bomberman.bomb_manager.planted_bombs
+      bomb_player.each { |bomb| bomb.draw }
     end
   end
+
 
   def button_down(id)
     if id == Gosu::KbEscape
