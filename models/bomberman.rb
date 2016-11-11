@@ -5,20 +5,23 @@ require_relative 'bomb_manager'
 require_relative 'buff'
 
 class Bomberman
-  attr_accessor :velocity, :window
+  attr_accessor :window, :frame, :direction
   attr_reader :uuid, :x, :y, :bomb_manager
 
   # metodo para criar um novo objeto da rede
-  def self.from_sprite(window, sprite)
-    Bomberman.new(window, sprite[1], sprite[2], sprite[3])
+  def self.from_sprite(window, socket_data)
+    Bomberman.new(window, socket_data[1], socket_data[2], socket_data[3], socket_data[4], socket_data[5], socket_data[6])
   end
 
-  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0)
+  def initialize (window, uuid = SecureRandom.uuid, x = 0, y = 0, direction = :up, frame = 0, method = '')
     @window = window
     @sprite = Gosu::Image.load_tiles(window, "assets/images/personagem/completo100.png", 50, 100, true)
     @uuid = uuid
+    @method = method
     @x = x.to_f
     @y = y.to_f
+    @direction = direction
+    @frame = 0
 
     # posicao do bomberman parado no sentido em que está. Inicial é parado de frente.
     @stopped = 0
@@ -26,8 +29,9 @@ class Bomberman
 
     @bomb_manager = BombManager.new self
     @buffs = []
+    @method = 'die'
 
-    @velocity = 1
+    @velocity = 2
 
     #Define imortalidade do personagem
     @immortal = false
@@ -45,11 +49,53 @@ class Bomberman
   end
 
   def plant_bomb
+    @method = 'plant_bomb'
     @bomb_manager.plant_bomb
   end
 
+  # 
+  # => MOVIMENTAÇAO
   #
-  # => Funçao para atribuir um Buff ao personagem
+  def move(direction = :up)
+    @direction = direction
+    # Somente para armazenar na variavel frame, para depois acessar externamente a imagem correta nos outros clientes.
+    @frame += 1
+    @frame = @frame%3
+    @method = "walk_#{direction.to_s}"
+    self.method("walk_"+@direction.to_s).call
+  end
+
+  def walk_left
+    @x -= @velocity
+    @stopped = 4
+    f = 4 + @frame
+    @image = @sprite[f]
+  end
+
+  def walk_right
+    @x += @velocity
+    @stopped = 2
+    f = @frame
+    @image = @sprite[f]
+  end
+
+  def walk_up
+    @y -= @velocity
+    @stopped = 10
+    f = 9 + @frame
+    @image = @sprite[f]
+  end
+
+  def walk_down
+    @y += @velocity
+    @stopped = 3
+    f = 7 + @frame
+    @image = @sprite[f]
+  end
+
+  #
+  # => Funçao para atribuir um Buff ao personagemuuid = message[1]
+    # method = message[4]
   #
   def give_buff(buff_type = :no_buff)
     #criar thread para verificar condiçao dos buffs
@@ -60,7 +106,6 @@ class Bomberman
   def attrib_buff buff
     buff.attrib_player self
     buff.apply_buff
-
     if buff.timer != 0 then
       Thread.start {
         sleep buff.timer
@@ -82,28 +127,28 @@ class Bomberman
   #
 
   #Controle da imortalidade do personagem
-  def set_immortal(action=:false)
+  def set_immortal(action = false)
     @player.immortal = action
   end
 
-  #Aumenta ou diminui a quantidade maxima de bombas plantadas simultaneamente
-  def planted_bombs_limit(action=:increment)
-    @bomb_manager.plantedBombsLimit action
+  #Aumenta ou diminui a quantidade maxima de bombauuid = message[1]
+    # method = message[4]s plantadas simultaneamente
+  def planted_bombs_limit(action = :increment)
+    @bomb_manager.planted_bombs_limit action
   end
 
   #Aumenta ou diminui o range da explosao
-  def bomb_explosion_range(action=:increment)
-    @bomb_manager.range action
+  def bomb_explosion_range(action = :increment)
+    @bomb_manager.explosion_range action
   end
 
   #Aumenta ou diminui a velocidade do jogador
-  def set_velocity action=:increment
+  def set_velocity action = :increment
     if action == :increment and @velocity <= 3
       @velocity += 1
 
     elsif action == :decrement and @velocity > 1
       @velocity -= 1
-
     end
   end
 
@@ -123,48 +168,19 @@ class Bomberman
     wall.moveTo(@new_x, @new_y)
     #or wall.moveTo(:direction)
   end
-
-  # 
-  # => MOVIMENTAÇAO
-  #
-  def move(frame, direction = :up)
-    self.method("walk_"+direction.to_s).call frame
-  end
-
-  def walk_left(frame)
-    @x -= velocity
-    @stopped = 4
-    f = 4 + frame % @sprite.size/4
-    @image = @sprite[f]
-  end
-
-  def walk_right(frame)
-    @x += velocity
-    @stopped = 2
-    f = frame % @sprite.size/4
-    @image = @sprite[f]
-  end
-
-  def walk_up(frame)
-    @y -= velocity
-    @stopped = 10
-    f = 9 + frame % @sprite.size/4
-    @image = @sprite[f]
-  end
-
-  def walk_down(frame)
-    @y += velocity
-    @stopped = 3
-    f = 7 + frame % @sprite.size/4
-    @image = @sprite[f]
-  end
   
   def stopped
+    #@method = 'stopped'
     @image = @sprite[@stopped]
   end
 
   def draw
-    @image.draw(@x, @y, 1, 0.34, 0.2)
+    # @image.draw(@x, @y, 1, 0.34, 0.2)
+    @image.draw(@x, @y, 1, 0.84, 0.62)
+  end
+
+  def to_socket_send
+    "#{@uuid}|#{@x}|#{@y}|#{@direction}|#{@method}"
   end
 end
 
